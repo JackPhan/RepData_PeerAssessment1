@@ -2,19 +2,46 @@
 
 
 ## Loading and preprocessing the data
-
-
+``` {r, echo = TRUE}
+data <- read.csv('activity.csv')
+mydt <- tapply(data$steps, data$date, mean)
+hist(mydt, main='Total number of steps taken each day', xlab='Date',ylab='Steps')
+```
 
 ## What is mean total number of steps taken per day?
-
-
+``` {r, echo = TRUE}
+mean(mydt, na.rm=TRUE)
+median(mydt, na.rm=TRUE)
+```
 
 ## What is the average daily activity pattern?
-
-
+``` {r, echo = TRUE}
+a = na.omit(data)
+dt = split(a$steps, a$interval)
+b = lapply(dt, mean)
+c = as.numeric(b)
+time = data$interval[1:288]
+plot(time,c,type='l', main = 'The average daily activity pattern', xlab="5 min time interval", ylab='Average steps')
+```
+5-minute interval contains the maximum number of steps
+``` {r, echo = TRUE}
+b[match(max(c),b)]
+```
 
 ## Imputing missing values
-
-
+``` {r, echo = TRUE}
+data[is.na(data)] = c
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+``` {r, echo = TRUE}
+data$date = as.Date(data$date)
+tf = weekdays(data$date) == "Sunday" | weekdays(data$date) == "Saturday"
+data$date = as.character(data$date)
+data$date[tf] <- 'weekend'  
+data$date[!tf] <- 'weekday'
+
+library(ggplot2)
+g = qplot(interval, steps,data=data,facets=date~.,binwidth=2)
+g + geom_line() + ylim(-2, 4)
+```
